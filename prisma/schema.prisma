@@ -1,0 +1,113 @@
+// Schema simples para o sistema de escalas do Tiro de Guerra.
+// Em desenvolvimento: SQLite (provider "sqlite").
+// Em produção (Vercel): troque o provider para "postgresql" e defina DATABASE_URL.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum MilitaryType {
+  ATIRADOR
+  CB_DE_DIA
+}
+
+enum SwapRequestStatus {
+  PENDENTE
+  APROVADA
+  REJEITADA
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  military Military?
+
+  swapRequests SwapRequest[]
+}
+
+model Military {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  name         String
+  warName      String
+  registration String       @unique
+  type         MilitaryType
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  assignments      ScheduleAssignment[]
+  swapsFrom        Swap[]               @relation("SwapFrom")
+  swapsTo          Swap[]               @relation("SwapTo")
+  swapRequestsFrom SwapRequest[]        @relation("SwapRequestFrom")
+  swapRequestsTo   SwapRequest[]        @relation("SwapRequestTo")
+}
+
+model Schedule {
+  id        String   @id @default(cuid())
+  date      DateTime @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignments  ScheduleAssignment[]
+  swaps        Swap[]
+  swapRequests SwapRequest[]
+}
+
+model ScheduleAssignment {
+  id         String @id @default(cuid())
+  scheduleId String
+  militaryId String
+
+  schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  military Military @relation(fields: [militaryId], references: [id], onDelete: Cascade)
+
+  @@unique([scheduleId, militaryId])
+}
+
+model Swap {
+  id             String   @id @default(cuid())
+  scheduleId     String
+  fromMilitaryId String
+  toMilitaryId   String
+  createdAt      DateTime @default(now())
+
+  schedule     Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  fromMilitary Military @relation("SwapFrom", fields: [fromMilitaryId], references: [id], onDelete: Cascade)
+  toMilitary   Military @relation("SwapTo", fields: [toMilitaryId], references: [id], onDelete: Cascade)
+}
+
+model SwapRequest {
+  id             String            @id @default(cuid())
+  scheduleId     String
+  fromMilitaryId String
+  toMilitaryId   String?
+  reason         String?
+  status         SwapRequestStatus @default(PENDENTE)
+  requestedById  String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  schedule     Schedule  @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  fromMilitary Military  @relation("SwapRequestFrom", fields: [fromMilitaryId], references: [id], onDelete: Cascade)
+  toMilitary   Military? @relation("SwapRequestTo", fields: [toMilitaryId], references: [id], onDelete: SetNull)
+  requestedBy  User      @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+}

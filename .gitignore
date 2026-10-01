@@ -1,0 +1,28 @@
+node_modules
+.next
+out
+dist
+.env
+.env.local
+*.db
+*.db-journal
+.DS_Store
+tsconfig.tsbuildinfo
+# Prisma generated client
+src/generated/prisma/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Next.js
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# Misc
+*.log
+.DS_Store
