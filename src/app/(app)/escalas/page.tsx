@@ -34,6 +34,7 @@ export default async function EscalasPage({
         id: a.military.id,
         name: a.military.name,
         warName: a.military.warName,
+        registration: a.military.registration,
         type: a.military.type,
         active: a.military.active,
       },
@@ -44,6 +45,7 @@ export default async function EscalasPage({
     id: m.id,
     name: m.name,
     warName: m.warName,
+    registration: m.registration,
     type: m.type,
     active: m.active,
   }));

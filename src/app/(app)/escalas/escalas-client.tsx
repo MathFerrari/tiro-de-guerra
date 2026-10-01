@@ -17,6 +17,7 @@ type MilitaryLite = {
   id: string;
   name: string;
   warName: string;
+  registration: string;
   type: "ATIRADOR" | "CB_DE_DIA";
   active: boolean;
 };
@@ -41,6 +42,7 @@ export function EscalasClient({
   endDate: string;
 }) {
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [pdfOpen, setPdfOpen] = useState(false);
   const [editSchedule, setEditSchedule] = useState<ScheduleData | null>(null);
   const [swapSchedule, setSwapSchedule] = useState<ScheduleData | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -56,13 +58,37 @@ export function EscalasClient({
     });
   }
 
-  function handleGeneratePdf() {
-    if (schedules.length === 0) {
-      alert("Não há escalas para gerar o PDF.");
+  function handleGeneratePdf(
+    pdfStartDate: string,
+    pdfEndDate: string,
+  ) {
+    if (pdfStartDate > pdfEndDate) {
+      alert(
+        "A data inicial deve ser menor ou igual à data final.",
+      );
       return;
     }
 
-    generateEscalaPdf(schedules, startDate, endDate);
+    const selectedSchedules = schedules.filter(
+      (schedule) =>
+        schedule.dateISO.slice(0, 10) >= pdfStartDate &&
+        schedule.dateISO.slice(0, 10) <= pdfEndDate,
+    );
+
+    if (selectedSchedules.length === 0) {
+      alert(
+        "Não existem escalas cadastradas no período selecionado.",
+      );
+      return;
+    }
+
+    generateEscalaPdf(
+      selectedSchedules,
+      pdfStartDate,
+      pdfEndDate,
+    );
+
+    setPdfOpen(false);
   }
 
   return (
@@ -76,7 +102,7 @@ export function EscalasClient({
           <Button
             type="button"
             variant="secondary"
-            onClick={handleGeneratePdf}
+            onClick={() => setPdfOpen(true)}
             disabled={schedules.length === 0}
           >
             Gerar PDF
@@ -158,6 +184,16 @@ export function EscalasClient({
 
       {isAdmin && (
         <GerarEscalaModal open={generateOpen} onClose={() => setGenerateOpen(false)} />
+      )}
+
+      {isAdmin && (
+        <GerarPdfModal
+          open={pdfOpen}
+          onClose={() => setPdfOpen(false)}
+          startDate={startDate}
+          endDate={endDate}
+          onGenerate={handleGeneratePdf}
+        />
       )}
 
       {isAdmin && editSchedule && (
@@ -464,6 +500,145 @@ function TrocarModal({
             disabled={saving || !toId || schedule.assignments.length === 0}
           >
             Confirmar troca
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function GerarPdfModal({
+  open,
+  onClose,
+  startDate,
+  endDate,
+  onGenerate,
+}: {
+  open: boolean;
+  onClose: () => void;
+  startDate: string;
+  endDate: string;
+  onGenerate: (
+    startDate: string,
+    endDate: string,
+  ) => void;
+}) {
+  const [pdfStartDate, setPdfStartDate] =
+    useState(startDate);
+
+  const [pdfEndDate, setPdfEndDate] =
+    useState(endDate);
+
+  function handleGenerate() {
+    if (!pdfStartDate || !pdfEndDate) {
+      alert(
+        "Informe a data inicial e a data final.",
+      );
+      return;
+    }
+
+    if (pdfStartDate > pdfEndDate) {
+      alert(
+        "A data inicial deve ser menor ou igual à data final.",
+      );
+      return;
+    }
+
+    onGenerate(
+      pdfStartDate,
+      pdfEndDate,
+    );
+  }
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Gerar PDF da escala"
+    >
+      <div className="flex flex-col gap-5">
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <p className="text-sm font-medium text-military-dark">
+            Selecione o período
+          </p>
+
+          <p className="mt-1 text-xs text-gray-500">
+            O PDF será gerado somente com as
+            escalas cadastradas dentro do período
+            selecionado.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="pdfStartDate">
+              Data inicial
+            </Label>
+
+            <Input
+              id="pdfStartDate"
+              type="date"
+              value={pdfStartDate}
+              onChange={(e) =>
+                setPdfStartDate(
+                  e.target.value,
+                )
+              }
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="pdfEndDate">
+              Data final
+            </Label>
+
+            <Input
+              id="pdfEndDate"
+              type="date"
+              value={pdfEndDate}
+              onChange={(e) =>
+                setPdfEndDate(
+                  e.target.value,
+                )
+              }
+            />
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-gray-200 p-3">
+          <p className="text-xs font-semibold uppercase text-gray-400">
+            Documento
+          </p>
+
+          <div className="mt-2 flex flex-col gap-1 text-sm text-gray-600">
+            <span>
+              Formato: A4 vertical
+            </span>
+
+            <span>
+              Orientação: Retrato
+            </span>
+
+            <span>
+              Organização: 3 escalas por página
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-1 flex justify-end gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+          >
+            Cancelar
+          </Button>
+
+          <Button
+            type="button"
+            onClick={handleGenerate}
+          >
+            Gerar PDF
           </Button>
         </div>
       </div>
