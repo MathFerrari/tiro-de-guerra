@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { MilitaresTable } from "./militares-table";
+import { redirect } from "next/navigation";
 
 export default async function MilitaresPage({
   searchParams,
@@ -9,6 +10,11 @@ export default async function MilitaresPage({
 }) {
   const session = await getSession();
   const { tipo } = await searchParams;
+
+
+  if (session?.role !== "ADMIN") {
+    redirect(session ? "/dashboard" : "/login");
+  }
 
   const where =
     tipo === "ATIRADOR" || tipo === "CB_DE_DIA" ? { type: tipo as "ATIRADOR" | "CB_DE_DIA" } : {};
