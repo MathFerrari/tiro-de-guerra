@@ -31,6 +31,19 @@ function sortMilitaries(militaries: MilitaryLite[]) {
   );
 }
 
+function shuffle<T>(items: T[]) {
+  const result = [...items];
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
+
+
 /**
  * Seleciona os próximos militares da sequência.
  *
@@ -50,8 +63,11 @@ function pickMilitaries(
   index: number,
   militaries: MilitaryLite[]
 ) {
-  const candidates = sortMilitaries(
-    militaries.filter((m) => m.type === type).filter(m => m.registration !== "35" && m.registration !== '37')
+  const candidates = militaries.filter(
+    (m) =>
+      m.type === type &&
+      m.registration !== "35" &&
+      m.registration !== "37"
   );
 
   if (candidates.length === 0) {
@@ -61,19 +77,34 @@ function pickMilitaries(
     };
   }
 
+  // Guarda uma ordem aleatória para cada tipo
+  const key = type === "CB_DE_DIA" ? "monitor" : "atirador";
+
+  const rotations = (pickMilitaries as any)._rotations ??= {};
+
+  if (
+    !rotations[key] ||
+    rotations[key].length !== candidates.length ||
+    index === 0
+  ) {
+    rotations[key] = [...candidates].sort(
+      () => Math.random() - 0.5
+    );
+  }
+
+  const rotation = rotations[key];
+
   const selected: MilitaryLite[] = [];
 
   for (let i = 0; i < count; i++) {
-    const position =
-      (index + i) % candidates.length;
-
-    selected.push(candidates[position]);
+    selected.push(
+      rotation[(index + i) % rotation.length]
+    );
   }
 
   return {
     selected,
-    nextIndex:
-      (index + count) % candidates.length,
+    nextIndex: (index + count) % rotation.length,
   };
 }
 
