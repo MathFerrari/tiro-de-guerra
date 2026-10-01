@@ -29,7 +29,7 @@ export function AppShell({
     <div className="flex min-h-screen bg-military-gray">
       {/* Sidebar - desktop */}
       <aside className="hidden w-56 flex-col bg-military-dark text-white md:flex">
-        <SidebarContent pathname={pathname} onNavigate={() => {}} />
+        <SidebarContent pathname={pathname} onNavigate={() => {}} userRole={userRole} />
       </aside>
 
       {/* Sidebar - mobile (overlay) */}
@@ -37,7 +37,7 @@ export function AppShell({
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} />
           <aside className="relative flex h-full w-56 flex-col bg-military-dark text-white">
-            <SidebarContent pathname={pathname} onNavigate={() => setMenuOpen(false)} />
+            <SidebarContent pathname={pathname} onNavigate={() => setMenuOpen(false)} userRole={userRole} />
           </aside>
         </div>
       )}
@@ -77,15 +77,17 @@ export function AppShell({
 function SidebarContent({
   pathname,
   onNavigate,
+  userRole,
 }: {
   pathname: string;
+  userRole: string;
   onNavigate: () => void;
 }) {
   return (
     <>
       <div className="px-6 py-5 text-xl font-bold tracking-wide text-military-green-light">TG</div>
       <nav className="flex flex-1 flex-col gap-1 px-3">
-        {links.map((link) => {
+        {links.filter(link => userRole !== "ADMIN").map((link) => {
           const active = pathname === link.href || pathname.startsWith(link.href + "/");
           return (
             <Link
