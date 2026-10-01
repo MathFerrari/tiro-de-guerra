@@ -264,6 +264,14 @@ export async function generateSchedule(
   let current = startDate;
 
   while (current <= endDate) {
+    const dayOfWeek = current.getDay();
+
+    // Sábado (6) e domingo (0) não possuem guarda
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      current = addDays(current, 1);
+      continue;
+    }
+
     /*
      * Cria ou recupera a escala do dia.
      */
@@ -286,24 +294,18 @@ export async function generateSchedule(
 
     if (includeMonitores) {
       const existingMonitors =
-        await prisma.scheduleAssignment.findMany(
-          {
-            where: {
-              scheduleId: schedule.id,
-              military: {
-                type: "CB_DE_DIA",
-              },
+        await prisma.scheduleAssignment.findMany({
+          where: {
+            scheduleId: schedule.id,
+            military: {
+              type: "CB_DE_DIA",
             },
-            include: {
-              military: true,
-            },
-          }
-        );
+          },
+          include: {
+            military: true,
+          },
+        });
 
-      /*
-       * Se já existem monitores escalados
-       * nesse dia, não sobrescreve.
-       */
       if (existingMonitors.length === 0) {
         const result = pickMilitaries(
           "CB_DE_DIA",
@@ -321,17 +323,8 @@ export async function generateSchedule(
           });
         }
 
-        monitorIndex =
-          result.nextIndex;
+        monitorIndex = result.nextIndex;
       } else {
-        /*
-         * Se já existe escala nesse dia,
-         * avançamos a sequência pela quantidade
-         * que deveria ser escalada.
-         *
-         * Isso evita que o próximo dia volte
-         * para o mesmo militar.
-         */
         monitorIndex =
           (monitorIndex + monitoresPerDay) %
           monitors.length;
@@ -346,24 +339,18 @@ export async function generateSchedule(
 
     if (includeAtiradores) {
       const existingAtiradores =
-        await prisma.scheduleAssignment.findMany(
-          {
-            where: {
-              scheduleId: schedule.id,
-              military: {
-                type: "ATIRADOR",
-              },
+        await prisma.scheduleAssignment.findMany({
+          where: {
+            scheduleId: schedule.id,
+            military: {
+              type: "ATIRADOR",
             },
-            include: {
-              military: true,
-            },
-          }
-        );
+          },
+          include: {
+            military: true,
+          },
+        });
 
-      /*
-       * Se já existem atiradores escalados
-       * nesse dia, não sobrescreve.
-       */
       if (existingAtiradores.length === 0) {
         const result = pickMilitaries(
           "ATIRADOR",
@@ -381,13 +368,8 @@ export async function generateSchedule(
           });
         }
 
-        atiradorIndex =
-          result.nextIndex;
+        atiradorIndex = result.nextIndex;
       } else {
-        /*
-         * Avança a sequência mesmo quando
-         * o dia já possui escala.
-         */
         atiradorIndex =
           (atiradorIndex + atiradoresPerDay) %
           atiradores.length;

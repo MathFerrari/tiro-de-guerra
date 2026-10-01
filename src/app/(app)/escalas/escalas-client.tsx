@@ -620,7 +620,7 @@ function GerarPdfModal({
             </span>
 
             <span>
-              Organização: 3 escalas por página
+              Organização: 4 escalas por página
             </span>
           </div>
         </div>
