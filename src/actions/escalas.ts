@@ -51,7 +51,7 @@ function pickMilitaries(
   militaries: MilitaryLite[]
 ) {
   const candidates = sortMilitaries(
-    militaries.filter((m) => m.type === type)
+    militaries.filter((m) => m.type === type).filter(m => m.registration !== "35" && m.registration !== '37')
   );
 
   if (candidates.length === 0) {
