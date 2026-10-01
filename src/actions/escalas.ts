@@ -262,12 +262,15 @@ export async function generateSchedule(
   let atiradorIndex = 0;
 
   let current = startDate;
+  const isSingleDay = startDate.getTime() === endDate.getTime();
 
   while (current <= endDate) {
     const dayOfWeek = current.getDay();
 
-    // Sábado (6) e domingo (0) não possuem guarda
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
+    if (
+      !isSingleDay &&
+      (dayOfWeek === 0 || dayOfWeek === 6)
+    ) {
       current = addDays(current, 1);
       continue;
     }
