@@ -261,8 +261,9 @@ export async function generateSchedule(
   let monitorIndex = 0;
   let atiradorIndex = 0;
 
-  let current = startDate;
   const isSingleDay = startDate.getTime() === endDate.getTime();
+
+  let current = startDate;
 
   while (current <= endDate) {
     const dayOfWeek = current.getDay();
@@ -278,16 +279,15 @@ export async function generateSchedule(
     /*
      * Cria ou recupera a escala do dia.
      */
-    const schedule =
-      await prisma.schedule.upsert({
-        where: {
-          date: current,
-        },
-        update: {},
-        create: {
-          date: current,
-        },
-      });
+    const schedule = await prisma.schedule.upsert({
+    where: {
+      date: current,
+    },
+    update: {},
+    create: {
+      date: current,
+    },
+  });
 
     /*
      * =====================================================
