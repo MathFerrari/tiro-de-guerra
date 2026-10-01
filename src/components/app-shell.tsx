@@ -87,7 +87,11 @@ function SidebarContent({
     <>
       <div className="px-6 py-5 text-xl font-bold tracking-wide text-military-green-light">TG</div>
       <nav className="flex flex-1 flex-col gap-1 px-3">
-        {links.filter(link => userRole !== "ADMIN").map((link) => {
+        {links.filter(link => {
+          if(link.label === 'Militares' && userRole !== "ADMIN") return false
+          return true
+        } 
+        ).map((link) => {
           const active = pathname === link.href || pathname.startsWith(link.href + "/");
           return (
             <Link
