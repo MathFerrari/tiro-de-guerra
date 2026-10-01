@@ -190,33 +190,28 @@ function drawSchedule(
     startY + 5,
   );
 
-  const rows: string[][] = [];
+  const monitorText = monitores.length
+    ? monitores
+        .map(
+          (m) =>
+            `${m.military.registration} - ${m.military.warName}`,
+        )
+        .join("  |  ")
+    : "-";
 
-  const maxRows = Math.max(
-    monitores.length,
-    atiradores.length,
-    1,
-  );
+  const atiradorText = atiradores.length
+    ? atiradores
+        .map(
+          (a) =>
+            `${a.military.registration} - ${a.military.warName}`,
+        )
+        .join("  |  ")
+    : "-";
 
-  for (let i = 0; i < maxRows; i++) {
-    const monitor = monitores[i]?.military;
-    const atirador = atiradores[i]?.military;
-
-    rows.push([
-      i === 0 ? "COMANDANTE\nDA GUARDA" : "",
-      monitor
-        ? `${monitor.registration} - ${monitor.warName}`
-        : "",
-      atirador
-        ? `${atirador.registration} - ${atirador.warName}`
-        : "",
-      i === 0
-        ? monitor
-          ? `${monitor.registration} - ${monitor.warName}`
-          : "-"
-        : "",
-    ]);
-  }
+  const rows = [
+    ["MONITOR", monitorText],
+    ["ATIRADOR", atiradorText],
+  ];
 
   autoTable(doc, {
     startY: startY + 9,
@@ -229,36 +224,30 @@ function drawSchedule(
 
     theme: "grid",
 
-    head: [[
-      "FUNÇÃO",
-      "MONITOR",
-      "ATIRADOR",
-      "PERMANÊNCIA",
-    ]],
+    head: [["FUNÇÃO", "MILITARES"]],
 
     body: rows,
 
     styles: {
       font: "helvetica",
-      fontSize: 7.5,
+      fontSize: 8,
       textColor: COLORS.black,
       lineColor: COLORS.border,
       lineWidth: 0.25,
       cellPadding: {
-        top: 2.5,
-        bottom: 2.5,
-        left: 2,
-        right: 2,
+        top: 3,
+        bottom: 3,
+        left: 3,
+        right: 3,
       },
       valign: "middle",
       overflow: "linebreak",
-      minCellHeight: 7,
     },
 
     headStyles: {
       font: "helvetica",
       fontStyle: "bold",
-      fontSize: 7,
+      fontSize: 7.5,
       fillColor: COLORS.lightGray,
       textColor: COLORS.black,
       lineColor: COLORS.border,
@@ -268,29 +257,18 @@ function drawSchedule(
     },
 
     bodyStyles: {
-      halign: "center",
+      halign: "left",
     },
 
     columnStyles: {
       0: {
-        cellWidth: contentWidth * 0.20,
+        cellWidth: contentWidth * 0.22,
         fontStyle: "bold",
+        halign: "center",
       },
       1: {
-        cellWidth: contentWidth * 0.26,
+        cellWidth: contentWidth * 0.78,
       },
-      2: {
-        cellWidth: contentWidth * 0.26,
-      },
-      3: {
-        cellWidth: contentWidth * 0.28,
-      },
-    },
-
-    didParseCell(data) {
-      if (data.section === "body" && data.column.index === 0) {
-        data.cell.styles.fontStyle = "bold";
-      }
     },
   });
 
@@ -299,17 +277,7 @@ function drawSchedule(
       lastAutoTable?: { finalY: number };
     }).lastAutoTable?.finalY ?? startY + 30;
 
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(6.5);
-  doc.setTextColor(...COLORS.gray);
-
-  doc.text(
-    "Os militares relacionados deverão cumprir o serviço conforme as determinações vigentes.",
-    margin,
-    finalY + 5,
-  );
-
-  return finalY + 12;
+  return finalY + 10;
 }
 
 export function generateEscalaPdf(
