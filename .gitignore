@@ -10,7 +10,7 @@ dist
 tsconfig.tsbuildinfo
 # Prisma generated client
 src/generated/prisma/
-generated/prisma/
+generated/prisma
 
 # Environment
 .env
