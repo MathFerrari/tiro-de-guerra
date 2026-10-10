@@ -18,8 +18,10 @@ export default async function DashboardPage() {
   const session = await getSession();
 
   if (session?.role !== "ADMIN") {
-      redirect(session ? "/escalas" : "/login");
-    }
+    console.log("Redirecting to /escalas or /login");
+    redirect(session ? "/escalas" : "/login");
+
+  }
 
   const [totalMilitares, atiradores, monitores, proximaEscala, escalas] =
     await Promise.all([

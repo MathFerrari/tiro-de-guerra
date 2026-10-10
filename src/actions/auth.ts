@@ -15,6 +15,7 @@ export async function login(formData: FormData) {
 
   const user = await prisma.user.findFirst({
     where: { OR: [{ email: identifier }, { name: identifier }] },
+    include: { military: true },
   });
 
   if (!user) {
@@ -26,7 +27,7 @@ export async function login(formData: FormData) {
     redirect("/login?error=" + encodeURIComponent("Usuário ou senha inválidos."));
   }
 
-  await createSession({ userId: user!.id, name: user!.name, role: user!.role });
+  await createSession({ userId: user!.id, name: user!.name, role: user!.role, tipo: user!.military?.type });
   redirect("/dashboard");
 }
 

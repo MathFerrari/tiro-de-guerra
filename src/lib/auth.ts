@@ -11,6 +11,7 @@ export type SessionPayload = {
   userId: string;
   name: string;
   role: "ADMIN" | "USER";
+  tipo?: "ATIRADOR" | "CB_DE_DIA";
 };
 
 function sign(base64: string): string {

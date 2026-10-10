@@ -17,9 +17,11 @@ export function AppShell({
   userName,
   userRole,
   children,
+  tipo,
 }: {
   userName: string;
   userRole: string;
+  tipo?: "ATIRADOR" | "CB_DE_DIA";
   children: React.ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -37,7 +39,7 @@ export function AppShell({
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} />
           <aside className="relative flex h-full w-56 flex-col bg-military-dark text-white">
-            <SidebarContent pathname={pathname} onNavigate={() => setMenuOpen(false)} userRole={userRole} />
+            <SidebarContent pathname={pathname} onNavigate={() => setMenuOpen(false)} userRole={userRole} tipo={tipo} />
           </aside>
         </div>
       )}
@@ -78,9 +80,11 @@ function SidebarContent({
   pathname,
   onNavigate,
   userRole,
+  tipo
 }: {
   pathname: string;
   userRole: string;
+  tipo?: "ATIRADOR" | "CB_DE_DIA";
   onNavigate: () => void;
 }) {
   return (
@@ -90,7 +94,7 @@ function SidebarContent({
         {links.filter(link => {
           if (
             (link.label === 'Militares' && userRole !== "ADMIN")
-            || (link.label === 'Dashboard' && userRole !== "ADMIN")
+            || (link.label === 'Dashboard' && tipo !== "CB_DE_DIA")
             || (link.label === 'Solicitações' && userRole !== "ADMIN")
           ) return false
           return true
