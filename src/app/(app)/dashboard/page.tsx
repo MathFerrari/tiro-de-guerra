@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { formatDate, toDateOnly } from "@/lib/utils";
+import { MilitaryChart } from "./military-chart";
 
 function Card({ label, value }: { label: string; value: string | number }) {
   return (
@@ -13,21 +14,38 @@ function Card({ label, value }: { label: string; value: string | number }) {
 export default async function DashboardPage() {
   const today = toDateOnly(new Date());
 
-  const [totalMilitares, atiradores, monitores, proximaEscala] = await Promise.all([
-    prisma.military.count({ where: { active: true } }),
-    prisma.military.count({ where: { active: true, type: "ATIRADOR" } }),
-    prisma.military.count({ where: { active: true, type: "CB_DE_DIA" } }),
-    prisma.schedule.findFirst({
-      where: { date: { gte: today } },
-      orderBy: { date: "asc" },
-      include: { assignments: { include: { military: true } } },
-    }),
-  ]);
+  const [totalMilitares, atiradores, monitores, proximaEscala, escalas] =
+    await Promise.all([
+      prisma.military.count({ where: { active: true } }),
+      prisma.military.count({ where: { active: true, type: "ATIRADOR" } }),
+      prisma.military.count({ where: { active: true, type: "CB_DE_DIA" } }),
+      prisma.schedule.findFirst({
+        where: { date: { gte: today } },
+        orderBy: { date: "asc" },
+        include: { assignments: { include: { military: true } } },
+      }),
+      prisma.schedule.findMany({
+        orderBy: { date: "desc" },
+        take: 12,
+        include: { assignments: { include: { military: true } } },
+      }),
+    ]);
 
   const monitoresEscalados =
     proximaEscala?.assignments.filter((a) => a.military.type === "CB_DE_DIA") ?? [];
+
   const atiradoresEscalados =
     proximaEscala?.assignments.filter((a) => a.military.type === "ATIRADOR") ?? [];
+
+  const chartData = escalas.reverse().map((escala) => ({
+    date: formatDate(escala.date),
+    militares: escala.assignments.map((a) => ({
+      id: a.military.id,
+      registration: a.military.registration,
+      warName: a.military.warName,
+      type: a.military.type,
+    })),
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -39,6 +57,8 @@ export default async function DashboardPage() {
         <Card label="Monitores" value={monitores} />
         <Card label="Próxima escala" value={proximaEscala ? formatDate(proximaEscala.date) : "-"} />
       </div>
+
+      <MilitaryChart data={chartData} />
 
       <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
@@ -52,6 +72,7 @@ export default async function DashboardPage() {
             <p className="mb-3 text-lg font-semibold text-military-green-dark">
               {formatDate(proximaEscala.date)}
             </p>
+
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
                 <p className="mb-1 text-xs font-semibold uppercase text-gray-400">Monitores</p>
@@ -65,6 +86,7 @@ export default async function DashboardPage() {
                   </ul>
                 )}
               </div>
+
               <div>
                 <p className="mb-1 text-xs font-semibold uppercase text-gray-400">Atiradores</p>
                 {atiradoresEscalados.length === 0 ? (

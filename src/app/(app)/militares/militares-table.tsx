@@ -63,6 +63,29 @@ export function MilitaresTable({
     setModalOpen(true);
   }
 
+  function getRowColor(m: Military) {
+    const total = guardCounts[m.id] ?? 0;
+
+    if (total === 0) {
+      return "bg-red-50/70 border-l-4 border-l-red-400";
+    }
+
+    const sameType = militares.filter((item) => item.type === m.type);
+    const average =
+      sameType.reduce((sum, item) => sum + (guardCounts[item.id] ?? 0), 0) /
+      (sameType.length || 1);
+
+    if (total < average) {
+      return "bg-emerald-50/50 border-l-4 border-l-emerald-400";
+    }
+
+    if (total > average) {
+      return "bg-amber-50/50 border-l-4 border-l-amber-400";
+    }
+
+    return "bg-white border-l-4 border-l-transparent";
+  }
+
   async function handleSubmit(formData: FormData) {
     setError("");
     try {
@@ -139,7 +162,7 @@ export function MilitaresTable({
           </thead>
           <tbody className="divide-y divide-gray-100">
             {militares.map((m) => (
-              <tr key={m.id} className={!m.active ? "opacity-60" : ""}>
+              <tr key={m.id} className={`${!m.active ? "opacity-60" : ""}`}>
                 <td className="px-4 py-3">{m.name}</td>
                 <td className="px-4 py-3">{m.warName}</td>
                 <td className="px-4 py-3">{m.registration}</td>
@@ -150,7 +173,14 @@ export function MilitaresTable({
                   <Badge color={m.active ? "green" : "red"}>{m.active ? "Ativo" : "Inativo"}</Badge>
                 </td>
                 <td className="px-4 py-3">
-                  {loadingGuards ? "..." : guardCounts[m.id] ?? "0"}
+                  <span
+                    className={`inline-flex min-w-8 items-center justify-center rounded-md px-2.5 py-1 text-xs font-semibold ${(guardCounts[m.id] ?? 0) === 0
+                        ? "bg-red-100 text-red-700"
+                        : "bg-white/80 text-gray-700 ring-1 ring-inset ring-gray-200"
+                      }`}
+                  >
+                    {loadingGuards ? "—" : guardCounts[m.id] ?? 0}
+                  </span>
                 </td>
                 {isAdmin && (
                   <td className="px-4 py-3">
