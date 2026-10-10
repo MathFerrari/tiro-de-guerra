@@ -31,7 +31,7 @@ export function AppShell({
     <div className="flex min-h-screen bg-military-gray">
       {/* Sidebar - desktop */}
       <aside className="hidden w-56 flex-col bg-military-dark text-white md:flex">
-        <SidebarContent pathname={pathname} onNavigate={() => { }} userRole={userRole} />
+        <SidebarContent pathname={pathname} onNavigate={() => { }} userRole={userRole} tipo={tipo} />
       </aside>
 
       {/* Sidebar - mobile (overlay) */}
@@ -60,7 +60,7 @@ export function AppShell({
           </div>
           <div className="flex items-center gap-3 text-sm text-gray-600">
             <span className="hidden sm:inline">
-              {userName} · {userRole === "ADMIN" ? "Administrador" : "Usuário"}
+              {userName} · {tipo === "CB_DE_DIA" ? "Cabo de Dia" : "Atirador"}
             </span>
             <form action={logout}>
               <button type="submit" className="font-medium text-military-green-mid hover:underline">
@@ -87,6 +87,7 @@ function SidebarContent({
   tipo?: "ATIRADOR" | "CB_DE_DIA";
   onNavigate: () => void;
 }) {
+  console.log("SidebarContent tipo:", userRole);
   return (
     <>
       <div className="px-6 py-5 text-xl font-bold tracking-wide text-military-green-light">TG</div>

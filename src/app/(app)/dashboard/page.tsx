@@ -17,7 +17,7 @@ export default async function DashboardPage() {
   const today = toDateOnly(new Date());
   const session = await getSession();
 
-  if (session?.role !== "ADMIN") {
+  if (session?.tipo !== "CB_DE_DIA") {
     console.log("Redirecting to /escalas or /login");
     redirect(session ? "/escalas" : "/login");
 
