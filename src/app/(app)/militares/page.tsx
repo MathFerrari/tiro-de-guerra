@@ -13,7 +13,7 @@ export default async function MilitaresPage({
 
 
   if (session?.role !== "ADMIN") {
-    redirect(session ? "/dashboard" : "/login");
+    redirect(session ? "/escalas" : "/login");
   }
 
   const where =

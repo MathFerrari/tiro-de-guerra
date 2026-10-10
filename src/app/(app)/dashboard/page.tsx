@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { formatDate, toDateOnly } from "@/lib/utils";
 import { MilitaryChart } from "./military-chart";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 function Card({ label, value }: { label: string; value: string | number }) {
   return (
@@ -13,6 +15,11 @@ function Card({ label, value }: { label: string; value: string | number }) {
 
 export default async function DashboardPage() {
   const today = toDateOnly(new Date());
+  const session = await getSession();
+
+  if (session?.role !== "ADMIN") {
+      redirect(session ? "/escalas" : "/login");
+    }
 
   const [totalMilitares, atiradores, monitores, proximaEscala, escalas] =
     await Promise.all([

@@ -29,7 +29,7 @@ export function AppShell({
     <div className="flex min-h-screen bg-military-gray">
       {/* Sidebar - desktop */}
       <aside className="hidden w-56 flex-col bg-military-dark text-white md:flex">
-        <SidebarContent pathname={pathname} onNavigate={() => {}} userRole={userRole} />
+        <SidebarContent pathname={pathname} onNavigate={() => { }} userRole={userRole} />
       </aside>
 
       {/* Sidebar - mobile (overlay) */}
@@ -88,9 +88,13 @@ function SidebarContent({
       <div className="px-6 py-5 text-xl font-bold tracking-wide text-military-green-light">TG</div>
       <nav className="flex flex-1 flex-col gap-1 px-3">
         {links.filter(link => {
-          if(link.label === 'Militares' && userRole !== "ADMIN") return false
+          if (
+            (link.label === 'Militares' && userRole !== "ADMIN")
+            || (link.label === 'Dashboard' && userRole !== "ADMIN")
+            || (link.label === 'Solicitações' && userRole !== "ADMIN")
+          ) return false
           return true
-        } 
+        }
         ).map((link) => {
           const active = pathname === link.href || pathname.startsWith(link.href + "/");
           return (
@@ -98,11 +102,10 @@ function SidebarContent({
               key={link.href}
               href={link.href}
               onClick={onNavigate}
-              className={`rounded-lg px-3 py-2 text-sm transition-colors ${
-                active
+              className={`rounded-lg px-3 py-2 text-sm transition-colors ${active
                   ? "bg-military-green-mid text-white"
                   : "text-gray-300 hover:bg-military-green-dark hover:text-white"
-              }`}
+                }`}
             >
               {link.label}
             </Link>
