@@ -71,40 +71,46 @@ function pickMilitaries(
   );
 
   if (candidates.length === 0) {
-    return {
-      selected: [],
-      nextIndex: index,
-    };
+    return { selected: [], nextIndex: index };
   }
 
-  // Guarda uma ordem aleatória para cada tipo
+  const rotations = (pickMilitaries as any)._counts ??= {};
   const key = type === "CB_DE_DIA" ? "monitor" : "atirador";
 
-  const rotations = (pickMilitaries as any)._rotations ??= {};
+  const counts: Record<string, number> = rotations[key] ??= {};
 
-  if (
-    !rotations[key] ||
-    rotations[key].length !== candidates.length ||
-    index === 0
-  ) {
-    rotations[key] = [...candidates].sort(
-      () => Math.random() - 0.5
-    );
-  }
+  // Inicializa a contagem dos militares
+  candidates.forEach((m) => {
+    counts[m.id] ??= 0;
+  });
 
-  const rotation = rotations[key];
+  // Prioriza quem foi escalado menos vezes; desempata aleatoriamente
+  const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+  shuffled.sort((a, b) => counts[a.id] - counts[b.id]);
 
   const selected: MilitaryLite[] = [];
+  const availableCounts = { ...counts };
 
-  for (let i = 0; i < count; i++) {
-    selected.push(
-      rotation[(index + i) % rotation.length]
+  for (let i = 0; i < Math.min(count, candidates.length); i++) {
+    const military = shuffled.find(
+      (m) => !selected.some((s) => s.id === m.id)
     );
+
+    if (!military) break;
+
+    selected.push(military);
+    availableCounts[military.id]++;
+    shuffled.splice(shuffled.indexOf(military), 1);
   }
+
+  // Atualiza a contagem para as próximas datas
+  selected.forEach((m) => {
+    counts[m.id]++;
+  });
 
   return {
     selected,
-    nextIndex: (index + count) % rotation.length,
+    nextIndex: index + selected.length,
   };
 }
 

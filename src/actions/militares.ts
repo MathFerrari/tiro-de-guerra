@@ -102,3 +102,38 @@ export async function toggleMilitaryActive(id: string) {
   revalidatePath("/militares");
   revalidatePath("/dashboard");
 }
+
+export async function getMilitaryGuardCount(militaryId: string) {
+  await requireAdmin();
+
+  const [total, realizadas] = await Promise.all([
+    prisma.scheduleAssignment.count({
+      where: { militaryId },
+    }),
+    prisma.scheduleAssignment.count({
+      where: {
+        militaryId,
+        schedule: {
+          date: { lt: new Date() },
+        },
+      },
+    }),
+  ]);
+
+  return { total, realizadas };
+}
+
+export async function getMilitaryGuardCounts() {
+  await requireAdmin();
+
+  const counts = await prisma.scheduleAssignment.groupBy({
+    by: ["militaryId"],
+    _count: { militaryId: true },
+  });
+
+  return Object.fromEntries(
+    counts.map((item) => [item.militaryId, item._count.militaryId])
+  );
+}
+
+

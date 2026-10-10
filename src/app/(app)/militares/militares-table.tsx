@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import type { Military } from "../../../../generated/prisma/client";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { Input, Label, Select } from "@/components/ui/input";
 import { typeLabels } from "@/lib/utils";
-import { createMilitary, updateMilitary, toggleMilitaryActive } from "@/actions/militares";
+import { createMilitary, updateMilitary, toggleMilitaryActive, getMilitaryGuardCount, getMilitaryGuardCounts } from "@/actions/militares";
 
 const filters = [
   { label: "Todos", value: undefined },
   { label: "Atiradores", value: "ATIRADOR" },
   { label: "Cabos de dia", value: "CB_DE_DIA" },
 ];
+
 
 export function MilitaresTable({
   militares,
@@ -29,6 +30,26 @@ export function MilitaresTable({
   const [editing, setEditing] = useState<Military | null>(null);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  const [guardModal, setGuardModal] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [guardCount, setGuardCount] = useState<{
+    total: number;
+    realizadas: number;
+  } | null>(null);
+  const [loadingGuards, setLoadingGuards] = useState(false);
+  const [guardCounts, setGuardCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    getMilitaryGuardCounts()
+      .then(setGuardCounts)
+      .catch(console.error)
+      .finally(() => setLoadingGuards(false));
+  }, [isAdmin]);
 
   function openCreate() {
     setEditing(null);
@@ -66,7 +87,21 @@ export function MilitaresTable({
     });
   }
 
-  console.log(militares)
+  async function openGuardModal(m: Military) {
+    setGuardModal({ id: m.id, name: m.warName });
+    setGuardCount(null);
+    setLoadingGuards(true);
+
+    try {
+      const count = await getMilitaryGuardCount(m.id);
+      setGuardCount(count);
+    } catch (e) {
+      setGuardModal(null);
+      alert(e instanceof Error ? e.message : "Erro ao buscar escalas.");
+    } finally {
+      setLoadingGuards(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -76,11 +111,10 @@ export function MilitaresTable({
             <Link
               key={f.label}
               href={f.value ? `/militares?tipo=${f.value}` : "/militares"}
-              className={`rounded-lg px-3 py-1.5 text-sm ${
-                filtroAtual === f.value || (!filtroAtual && !f.value)
-                  ? "bg-military-green-mid text-white"
-                  : "bg-white text-military-green-dark border border-gray-300"
-              }`}
+              className={`rounded-lg px-3 py-1.5 text-sm ${filtroAtual === f.value || (!filtroAtual && !f.value)
+                ? "bg-military-green-mid text-white"
+                : "bg-white text-military-green-dark border border-gray-300"
+                }`}
             >
               {f.label}
             </Link>
@@ -99,6 +133,7 @@ export function MilitaresTable({
               <th className="px-4 py-3">Matrícula</th>
               <th className="px-4 py-3">Tipo</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Escalações</th>
               {isAdmin && <th className="px-4 py-3">Ações</th>}
             </tr>
           </thead>
@@ -113,6 +148,9 @@ export function MilitaresTable({
                 </td>
                 <td className="px-4 py-3">
                   <Badge color={m.active ? "green" : "red"}>{m.active ? "Ativo" : "Inativo"}</Badge>
+                </td>
+                <td className="px-4 py-3">
+                  {loadingGuards ? "..." : guardCounts[m.id] ?? "0"}
                 </td>
                 {isAdmin && (
                   <td className="px-4 py-3">
@@ -129,6 +167,13 @@ export function MilitaresTable({
                         className="text-red-600 hover:underline disabled:opacity-50"
                       >
                         {m.active ? "Inativar" : "Reativar"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openGuardModal(m)}
+                        className="text-military-green-mid hover:underline"
+                      >
+                        Ver escalas
                       </button>
                     </div>
                   </td>
@@ -177,6 +222,35 @@ export function MilitaresTable({
             <Button type="submit">Salvar</Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal open={!!guardModal} onClose={() => setGuardModal(null)} title={`Escalas - ${guardModal?.name ?? ""}`}>
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
+              <p className="text-sm text-gray-500">Total escalado</p>
+              <p className="mt-2 text-3xl font-bold text-military-green-dark">
+                {loadingGuards ? "..." : guardCount?.total ?? "—"}
+              </p>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
+              <p className="text-sm text-gray-500">Serviços realizados</p>
+              <p className="mt-2 text-3xl font-bold text-military-green-dark">
+                {loadingGuards ? "..." : guardCount?.realizadas ?? "—"}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-500">
+            Serviços realizados são escalas com data anterior à data e hora atuais.
+          </p>
+
+          <div className="flex justify-end">
+            <Button type="button" variant="secondary" onClick={() => setGuardModal(null)}>
+              Fechar
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
