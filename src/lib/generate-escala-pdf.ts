@@ -209,8 +209,8 @@ function drawSchedule(
     : "-";
 
   const rows = [
-    ["MONITOR", monitorText],
-    ["ATIRADOR", atiradorText],
+    ["CABO DE DIA", monitorText],
+    ["SENTINELA", atiradorText],
   ];
 
   autoTable(doc, {
