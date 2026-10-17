@@ -61,51 +61,30 @@ function pickMilitaries(
   type: MilitaryType,
   count: number,
   index: number,
-  militaries: MilitaryLite[]
+  militaries: MilitaryLite[],
+  assignmentCounts: Map<string, number>
 ) {
-  const candidates = militaries.filter(
-    (m) =>
-      m.type === type &&
-      m.registration !== "35" &&
-      m.registration !== "37"
+  const candidates = shuffle(
+    militaries.filter(
+      (m) =>
+        m.type === type &&
+        m.registration !== "35" &&
+        m.registration !== "37"
+    )
+  ).sort(
+    (a, b) =>
+      (assignmentCounts.get(a.id) ?? 0) -
+      (assignmentCounts.get(b.id) ?? 0)
   );
 
-  if (candidates.length === 0) {
-    return { selected: [], nextIndex: index };
-  }
+  const selected = candidates.slice(0, count);
 
-  const rotations = (pickMilitaries as any)._counts ??= {};
-  const key = type === "CB_DE_DIA" ? "monitor" : "atirador";
-
-  const counts: Record<string, number> = rotations[key] ??= {};
-
-  // Inicializa a contagem dos militares
-  candidates.forEach((m) => {
-    counts[m.id] ??= 0;
-  });
-
-  // Prioriza quem foi escalado menos vezes; desempata aleatoriamente
-  const shuffled = [...candidates].sort(() => Math.random() - 0.5);
-  shuffled.sort((a, b) => counts[a.id] - counts[b.id]);
-
-  const selected: MilitaryLite[] = [];
-  const availableCounts = { ...counts };
-
-  for (let i = 0; i < Math.min(count, candidates.length); i++) {
-    const military = shuffled.find(
-      (m) => !selected.some((s) => s.id === m.id)
+  // Atualiza as contagens em memória para as próximas datas geradas.
+  selected.forEach((military) => {
+    assignmentCounts.set(
+      military.id,
+      (assignmentCounts.get(military.id) ?? 0) + 1
     );
-
-    if (!military) break;
-
-    selected.push(military);
-    availableCounts[military.id]++;
-    shuffled.splice(shuffled.indexOf(military), 1);
-  }
-
-  // Atualiza a contagem para as próximas datas
-  selected.forEach((m) => {
-    counts[m.id]++;
   });
 
   return {
@@ -231,6 +210,20 @@ export async function generateSchedule(
       },
     });
 
+  const assignmentHistory = await prisma.scheduleAssignment.groupBy({
+    by: ["militaryId"],
+    _count: {
+      _all: true,
+    },
+  });
+
+  const assignmentCounts = new Map<string, number>(
+    assignmentHistory.map(({ militaryId, _count }) => [
+      militaryId,
+      _count._all,
+    ])
+  );
+
   /*
    * Separa os grupos.
    */
@@ -317,14 +310,14 @@ export async function generateSchedule(
      * Cria ou recupera a escala do dia.
      */
     const schedule = await prisma.schedule.upsert({
-    where: {
-      date: current,
-    },
-    update: {},
-    create: {
-      date: current,
-    },
-  });
+      where: {
+        date: current,
+      },
+      update: {},
+      create: {
+        date: current,
+      },
+    });
 
     /*
      * =====================================================
@@ -351,7 +344,8 @@ export async function generateSchedule(
           "CB_DE_DIA",
           monitoresPerDay,
           monitorIndex,
-          militaries
+          militaries,
+          assignmentCounts
         );
 
         for (const military of result.selected) {
@@ -396,7 +390,8 @@ export async function generateSchedule(
           "ATIRADOR",
           atiradoresPerDay,
           atiradorIndex,
-          militaries
+          militaries,
+          assignmentCounts
         );
 
         for (const military of result.selected) {
