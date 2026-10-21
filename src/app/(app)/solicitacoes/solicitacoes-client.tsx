@@ -191,7 +191,7 @@ function RequestCard({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-sm font-semibold text-military-green-dark">
-            {formatDate(new Date(request.scheduleDateISO))}
+            {formatDate(request.scheduleDateISO)}
           </p>
           <p className="text-sm text-military-dark">
             Trocar <span className="font-medium">{request.fromMilitary.warName}</span>{" "}
@@ -205,7 +205,7 @@ function RequestCard({
           </p>
           {request.reason && <p className="mt-1 text-sm text-gray-500">Motivo: {request.reason}</p>}
           <p className="mt-1 text-xs text-gray-400">
-            Solicitado por {request.requestedBy.name} em {formatDateTime(new Date(request.createdAtISO))}
+            Solicitado por {request.requestedBy.name} em {formatDateTime(request.createdAtISO)}
           </p>
         </div>
 
@@ -312,7 +312,7 @@ function NovaSolicitacaoModal({
             <option value="">Selecione uma data</option>
             {schedules.map((s) => (
               <option key={s.id} value={s.id}>
-                {formatDate(new Date(s.dateISO))}
+                {formatDate(s.dateISO)}
               </option>
             ))}
           </select>
@@ -431,7 +431,7 @@ function AprovarModal({
   }
 
   return (
-    <Modal open onClose={onClose} title={`Aprovar troca - ${formatDate(new Date(request.scheduleDateISO))}`}>
+    <Modal open onClose={onClose} title={`Aprovar troca - ${formatDate(request.scheduleDateISO)}`}>
       <div className="flex flex-col gap-4">
         {error && <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
 

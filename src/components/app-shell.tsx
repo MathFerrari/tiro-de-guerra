@@ -87,7 +87,6 @@ function SidebarContent({
   tipo?: "ATIRADOR" | "CB_DE_DIA";
   onNavigate: () => void;
 }) {
-  console.log("SidebarContent tipo:", userRole);
   return (
     <>
       <div className="px-6 py-5 text-xl font-bold tracking-wide text-military-green-light">TG</div>

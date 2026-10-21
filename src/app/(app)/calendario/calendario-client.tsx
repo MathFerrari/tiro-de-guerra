@@ -41,7 +41,7 @@ export function CalendarioClient({
 
   const schedulesByDay = new Map<number, ScheduleData>();
   schedules.forEach((s) => {
-    const d = new Date(s.dateISO);
+    const d = new Date(Number(s.dateISO.split("T")[0].split("-")[0]), Number(s.dateISO.split("T")[0].split("-")[1]) - 1, Number(s.dateISO.split("T")[0].split("-")[2]));
     schedulesByDay.set(d.getDate(), s);
   });
 
@@ -118,7 +118,7 @@ export function CalendarioClient({
       </div>
 
       {selected && (
-        <Modal open onClose={() => setSelected(null)} title={formatDate(new Date(selected.dateISO))}>
+        <Modal open onClose={() => setSelected(null)} title={formatDate(selected.dateISO)}>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
               <p className="mb-1 text-xs font-semibold uppercase text-gray-400">Monitores</p>

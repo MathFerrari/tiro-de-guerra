@@ -20,7 +20,6 @@ export default async function DashboardPage() {
   if (session?.tipo !== "CB_DE_DIA") {
     console.log("Redirecting to /escalas or /login");
     redirect(session ? "/escalas" : "/login");
-
   }
 
   const [totalMilitares, atiradores, monitores, proximaEscala, escalas] =
@@ -39,7 +38,7 @@ export default async function DashboardPage() {
         include: { assignments: { include: { military: true } } },
       }),
     ]);
-
+    
   const monitoresEscalados =
     proximaEscala?.assignments.filter((a) => a.military.type === "CB_DE_DIA") ?? [];
 
@@ -47,7 +46,7 @@ export default async function DashboardPage() {
     proximaEscala?.assignments.filter((a) => a.military.type === "ATIRADOR") ?? [];
 
   const chartData = escalas.reverse().map((escala) => ({
-    date: formatDate(escala.date),
+    date: formatDate(escala.date.toISOString()),
     militares: escala.assignments.map((a) => ({
       id: a.military.id,
       registration: a.military.registration,
@@ -64,7 +63,7 @@ export default async function DashboardPage() {
         <Card label="Total de militares" value={totalMilitares} />
         <Card label="Atiradores" value={atiradores} />
         <Card label="Monitores" value={monitores} />
-        <Card label="Próxima escala" value={proximaEscala ? formatDate(proximaEscala.date) : "-"} />
+        <Card label="Próxima escala" value={proximaEscala ? formatDate(proximaEscala.date.toISOString()) : "-"} />
       </div>
 
       <MilitaryChart data={chartData} />
@@ -79,7 +78,7 @@ export default async function DashboardPage() {
         ) : (
           <div>
             <p className="mb-3 text-lg font-semibold text-military-green-dark">
-              {formatDate(proximaEscala.date)}
+              {formatDate(proximaEscala.date.toISOString())}
             </p>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

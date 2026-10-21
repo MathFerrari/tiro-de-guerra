@@ -9,8 +9,6 @@ export default async function SolicitacoesPage() {
 
   const today = toDateOnly(new Date());
 
-  console.log(prisma)
-
   const [requests, upcomingSchedules] = await Promise.all([
     prisma.swapRequest.findMany({
       where: isAdmin ? {} : { requestedById: session.userId },

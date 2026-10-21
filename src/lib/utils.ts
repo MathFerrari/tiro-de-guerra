@@ -1,10 +1,12 @@
-export function formatDate(date: Date): string {
-  const d = new Date(date);
+export function formatDate(date: string): string {
+  const d = new Date(Number(date.split("T")[0].split("-")[0]), Number(date.split("T")[0].split("-")[1]) - 1, Number(date.split("T")[0].split("-")[2])); // Use only the date part (YYYY-MM-DD) to avoid timezone issues
   const day = String(d.getDate()).padStart(2, "0");
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const year = d.getFullYear();
+ 
   return `${day}/${month}/${year}`;
 }
+//date=2026-10-29T00:00:00.000Z, d=Wed Oct 28 2026 21:00:00 GMT-0300 (Horário Padrão de Brasília), day=28, month=10, year=2026
 
 // Converte "2026-10-10" (input type=date) para uma Date "pura" (sem horário),
 // evitando problemas de fuso horário.
@@ -47,9 +49,10 @@ export const swapRequestStatusLabels: Record<string, string> = {
   REJEITADA: "Rejeitada",
 };
 
-export function formatDateTime(date: Date): string {
-  const d = new Date(date);
+export function formatDateTime(date: string): string {
+  const d = new Date(Number(date.split("T")[0].split("-")[0]), Number(date.split("T")[0].split("-")[1]) - 1, Number(date.split("T")[0].split("-")[2]));
   const hours = String(d.getHours()).padStart(2, "0");
   const minutes = String(d.getMinutes()).padStart(2, "0");
-  return `${formatDate(d)} ${hours}:${minutes}`;
+
+  return `${formatDate(date)} ${hours}:${minutes}`;
 }

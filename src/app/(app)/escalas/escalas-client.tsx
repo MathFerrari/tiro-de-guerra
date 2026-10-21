@@ -146,7 +146,7 @@ export function EscalasClient({
             <div key={schedule.id} className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold text-military-green-dark">
-                  {formatDate(new Date(schedule.dateISO))}
+                  {schedule.dateISO.split("T")[0].split("-").reverse().join("/")}
                 </h2>
                 {isAdmin && (
                   <div className="flex gap-3 text-sm">
@@ -348,7 +348,7 @@ function EditarEscalaModal({
   }
 
   return (
-    <Modal open onClose={onClose} title={`Editar escala - ${formatDate(new Date(schedule.dateISO))}`}>
+    <Modal open onClose={onClose} title={`Editar escala - ${formatDate(schedule.dateISO)}`}>
       <div className="flex flex-col gap-4">
         {error && <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
 
@@ -439,7 +439,7 @@ function TrocarModal({
   }
 
   return (
-    <Modal open onClose={onClose} title={`Trocar - ${formatDate(new Date(schedule.dateISO))}`}>
+    <Modal open onClose={onClose} title={`Trocar - ${formatDate(schedule.dateISO)}`}>
       <div className="flex flex-col gap-4">
         {error && <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
 

@@ -117,12 +117,16 @@ export function MilitaryChart({ data }: { data: ChartItem[] }) {
         { label: "Cabo de dia", value: "CB_DE_DIA" },
     ];
 
+
     function getPieSlice(startAngle: number, endAngle: number, radius = 100) {
+        const round = (value: number) => Number(value.toFixed(3));
+
         const point = (angle: number) => {
             const rad = ((angle - 90) * Math.PI) / 180;
+
             return {
-                x: 110 + radius * Math.cos(rad),
-                y: 110 + radius * Math.sin(rad),
+                x: round(110 + radius * Math.cos(rad)),
+                y: round(110 + radius * Math.sin(rad)),
             };
         };
 
@@ -136,6 +140,7 @@ export function MilitaryChart({ data }: { data: ChartItem[] }) {
 
         return `M 110 110 L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x} ${end.y} Z`;
     }
+
 
     return (
         <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm">
